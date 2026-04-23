@@ -23,7 +23,14 @@ You can change the model by changing the `MODEL` env var in the `.env` file.
 
 - **Configure Environment**: Copy ``.env.example` and set up the environment variables for [Browseless](https://www.browserless.io/), [Serper](https://serper.dev/).
 - **Install Dependencies**: Run `poetry install --no-root` (uses crewAI==0.130.0).
-- **Execute the Script**: Run `python main.py` and input your idea.
+- **Execute the Script (interactive)**: Run `poetry run python main.py` and answer the prompts.
+- **Execute the Script (non-interactive + log redirection)**: Pass arguments and redirect output to a file:
+
+```bash
+poetry run python main.py "WEBSITE_URL" "PRODUCT_TOPIC" > instagram_post-23042026.log 2>&1
+```
+
+`2>&1` captures warnings/errors in the same log file.
 
 ## Details & Explanation
 - **Running the Script**: Execute `python main.py`` and input your idea when prompted. The script will leverage the CrewAI framework to process the idea and generate an instagram post.
@@ -32,6 +39,43 @@ You can change the model by changing the `MODEL` env var in the `.env` file.
   - `./tasks.py`: Main file with the tasks prompts.
   - `./agents.py`: Main file with the agents creation.
   - `./tools/`: Contains tool classes used by the agents.
+
+## Expected outputs (per task)
+This project runs two crews:
+
+- **Marketing analysis crew** (copy strategy + captions)
+  - **Product analysis** (`product_analysis`)
+    - **Expected output**: A structured product analysis report:
+      - Key features and benefits
+      - Target audience and positioning
+      - Differentiators vs alternatives
+      - Actionable messaging suggestions
+  - **Competitor analysis** (`competitor_analysis`)
+    - **Expected output**: A competitor report:
+      - Top 3 competitors (names/links)
+      - Positioning/messaging/offers/audience per competitor
+      - Comparison vs the provided website
+      - Differentiation opportunities
+  - **Campaign development** (`campaign_development`)
+    - **Expected output**: A campaign outline:
+      - Goal + target audience
+      - Core message + creative direction
+      - 3–5 content ideas (angles/hooks)
+      - Suggested CTAs and posting approach
+  - **Instagram ad copy** (`instagram_ad_copy`)
+    - **Expected output**: Exactly 3 Instagram caption options:
+      - Strong first-line hook
+      - Mobile-friendly formatting
+      - Clear CTA
+      - Optional minimal hashtags
+
+- **Image crew** (Midjourney-style photo prompts)
+  - **Take photograph** (`take_photograph_task`)
+    - **Expected output**: Exactly 3 distinct photo prompt descriptions (1 paragraph each),
+      in the style of the examples (shot type / lighting / quality keywords).
+  - **Review photo** (`review_photo`)
+    - **Expected output**: Exactly 3 refined photo descriptions (1 paragraph each),
+      polished for clarity and aligned with the campaign goals.
 
 ## Using Local Models with Ollama
 This example run entirely local models, the CrewAI framework supports integration with both closed and local models, by using tools such as Ollama, for enhanced flexibility and customization. This allows you to utilize your own models, which can be particularly useful for specialized tasks or data privacy concerns.

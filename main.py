@@ -60,7 +60,8 @@ copy_crew = Crew(
 	output_log_file="marketing_analysis_crew.log"
 )
 
-ad_copy = copy_crew.kickoff()
+copy_result = copy_crew.kickoff()
+ad_copy = getattr(copy_result, "raw", None) or getattr(copy_result, "final_output", None) or str(copy_result)
 
 # Create Crew responsible for Image
 senior_photographer = agents.senior_photographer_agent()
@@ -82,7 +83,27 @@ image_crew = Crew(
 	output_log_file="instagram_post_crew.log"
 )
 
-image = image_crew.kickoff()
+image_result = image_crew.kickoff()
+image = getattr(image_result, "raw", None) or getattr(image_result, "final_output", None) or str(image_result)
+
+def _dump_task_outputs(label: str, crew_output) -> None:
+	task_outputs = getattr(crew_output, "tasks_output", None) or getattr(crew_output, "task_outputs", None)
+	if not task_outputs:
+		return
+	print(f"\n\n########################")
+	print(f"## {label}: task outputs")
+	print(f"########################\n")
+	for i, to in enumerate(task_outputs, start=1):
+		desc = getattr(to, "description", None) or getattr(getattr(to, "task", None), "description", None) or ""
+		raw = getattr(to, "raw", None) or getattr(to, "output", None) or getattr(to, "final_output", None) or str(to)
+		print(f"\n--- Task {i} ---")
+		if desc:
+			print(desc.strip())
+		print("\nOutput:\n")
+		print(raw)
+
+_dump_task_outputs("Marketing analysis crew", copy_result)
+_dump_task_outputs("Image crew", image_result)
 
 # Print results
 print("\n\n########################")
