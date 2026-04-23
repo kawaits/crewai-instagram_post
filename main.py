@@ -1,6 +1,9 @@
 from dotenv import load_dotenv
 load_dotenv()
 
+import argparse
+import os
+
 from textwrap import dedent
 from crewai import Agent, Crew
 
@@ -10,10 +13,24 @@ from agents import MarketingAnalysisAgents
 tasks = MarketingAnalysisTasks()
 agents = MarketingAnalysisAgents()
 
+missing = [k for k in ("SERPER_API_KEY", "BROWSERLESS_API_KEY", "MODEL") if not os.getenv(k)]
+if missing:
+	print(f"Missing required env vars in .env: {', '.join(missing)}")
+	print("Tip: copy .env.example to .env and set the values.")
+
+parser = argparse.ArgumentParser(description="Run the Instagram post CrewAI example.")
+parser.add_argument("product_website", nargs="?", help="Product website URL (e.g. https://example.com)")
+parser.add_argument("product_details", nargs="?", help="Extra product/post details (free text)")
+args = parser.parse_args()
+
 print("## Welcome to the marketing Crew")
 print('-------------------------------')
-product_website = input("What is the product website you want a marketing strategy for?\n")
-product_details = input("Any extra details about the product and or the instagram post you want?\n")
+product_website = args.product_website or input(
+	"What is the product website you want a marketing strategy for?\n"
+)
+product_details = args.product_details or input(
+	"Any extra details about the product and or the instagram post you want?\n"
+)
 
 
 # Create Agents
@@ -39,7 +56,8 @@ copy_crew = Crew(
 		campaign_development,
 		write_copy
 	],
-	verbose=True
+	verbose=True,
+	output_log_file="marketing_analysis_crew.log"
 )
 
 ad_copy = copy_crew.kickoff()
@@ -60,7 +78,8 @@ image_crew = Crew(
 		take_photo,
 		approve_photo
 	],
-	verbose=True
+	verbose=True,
+	output_log_file="instagram_post_crew.log"
 )
 
 image = image_crew.kickoff()

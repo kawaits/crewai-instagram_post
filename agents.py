@@ -1,15 +1,23 @@
 import os
 from textwrap import dedent
 from crewai import Agent
+from crewai import LLM
 from tools.browser_tools import BrowserTools
 from tools.search_tools import SearchTools
-from langchain.agents import load_tools
 
-from langchain.llms import Ollama
+def _crewai_model_from_env() -> str:
+	model = os.environ["MODEL"].strip()
+	# CrewAI uses LiteLLM under the hood; for Ollama the model is typically `ollama/<model>`.
+	if "/" not in model:
+		return f"ollama/{model}"
+	return model
 
 class MarketingAnalysisAgents:
 	def __init__(self):
-		self.llm = Ollama(model=os.environ['MODEL'])
+		self.llm = LLM(
+			model=_crewai_model_from_env(),
+			base_url=os.getenv("OLLAMA_BASE_URL") or None,
+		)
 
 	def product_competitor_agent(self):
 		return Agent(
